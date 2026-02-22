@@ -1,0 +1,110 @@
+# Deploy GKE Autopilot cluster via Terraform.
+# Trigger manually with inputs for project, region, cluster name, etc.
+# Requires: GOOGLE_CREDENTIALS secret (GCP service account JSON key).
+
+name: Deploy GKE Autopilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'GCP project ID'
+        required: true
+        type: string
+      region:
+        description: 'GCP region (e.g. us-central1)'
+        required: true
+        type: string
+      cluster_name:
+        description: 'GKE Autopilot cluster name'
+        required: true
+        type: string
+      release_channel:
+        description: 'Release channel (REGULAR, RAPID, STABLE)'
+        required: false
+        default: 'REGULAR'
+        type: choice
+        options:
+          - REGULAR
+          - RAPID
+          - STABLE
+      network:
+        description: 'VPC network name (default)'
+        required: false
+        default: 'default'
+        type: string
+      subnetwork:
+        description: 'VPC subnetwork name (empty for default)'
+        required: false
+        default: ''
+        type: string
+      enable_private_cluster:
+        description: 'Enable private cluster'
+        required: false
+        default: false
+        type: boolean
+      deletion_protection:
+        description: 'Enable deletion protection'
+        required: false
+        default: false
+        type: boolean
+      apply:
+        description: 'Run terraform apply (if false, plan only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  TF_WORKING_DIR: terraform
+
+jobs:
+  deploy:
+    name: Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -no-color -input=false \
+            -var="project_id=${{ inputs.project_id }}" \
+            -var="region=${{ inputs.region }}" \
+            -var="cluster_name=${{ inputs.cluster_name }}" \
+            -var="release_channel=${{ inputs.release_channel }}" \
+            -var="network=${{ inputs.network }}" \
+            -var="subnetwork=${{ inputs.subnetwork }}" \
+            -var="enable_private_cluster=${{ inputs.enable_private_cluster }}" \
+            -var="deletion_protection=${{ inputs.deletion_protection }}" \
+            -out=tfplan
+        continue-on-error: true
+
+      - name: Terraform Plan (output)
+        run: terraform show -no-color tfplan || true
+
+      - name: Terraform Apply
+        if: inputs.apply == true && success()
+        run: terraform apply -no-color -input=false -auto-approve tfplan
+
+      - name: Outputs
+        if: inputs.apply == true && success()
+        run: terraform output -json

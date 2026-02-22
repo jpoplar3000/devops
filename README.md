@@ -49,3 +49,36 @@ $(terraform output -raw kubeconfig_command)
 | `network` / `subnetwork` | VPC (omit for default) | `default` / empty |
 | `enable_private_cluster` | Private nodes (and optionally control plane) | `false` |
 | `deletion_protection` | Block cluster deletion | `false` |
+
+---
+
+## GitHub Actions (repeatable deploys)
+
+The workflow **Deploy GKE Autopilot** (`.github/workflows/gke-autopilot.yaml`) runs Terraform so you can build clusters in different projects, names, and regions from the Actions tab.
+
+### Setup
+
+1. **GCP service account**  
+   Create a service account in the project(s) you will deploy to (or an org-level project) with:
+   - **Kubernetes Engine Admin**
+   - **Service Usage Consumer** (to enable APIs)  
+   Optionally restrict to a single project with IAM conditions.
+
+2. **JSON key**  
+   Create a key for that service account and download the JSON.
+
+3. **GitHub secret**  
+   In the repo: **Settings → Secrets and variables → Actions** → **New repository secret**  
+   - Name: `GOOGLE_CREDENTIALS`  
+   - Value: paste the full contents of the JSON key file.
+
+### Running the workflow
+
+1. Open the **Actions** tab and select **Deploy GKE Autopilot**.
+2. Click **Run workflow**.
+3. Fill in the inputs (required: **project_id**, **region**, **cluster_name**). The rest use defaults.
+4. Leave **Run terraform apply** unchecked to only run `terraform plan`; check it to run `terraform apply` and create/update the cluster.
+
+Each run uses the inputs you provide, so you can target different projects, regions, and cluster names without changing code.
+
+**Multiple clusters:** If you use the same repo to manage more than one cluster (different projects/names/regions), configure a [remote backend](https://www.terraform.io/language/settings/backends) (e.g. GCS) and use a state key that includes `project_id` and `cluster_name` (or similar) so each cluster has its own state file. Otherwise each run will overwrite the same local state.
