@@ -92,7 +92,10 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET || 'terraform-state-0222206' }}" \
+            -backend-config="prefix=gke-autopilot/${{ inputs.project_id }}/${{ inputs.cluster_name }}"
 
       - name: Terraform Plan
         id: plan

@@ -1,0 +1,6 @@
+# Copy to backend.config (or pass -backend-config=... at init).
+# backend.config is gitignored.
+# Use one prefix per cluster so each cluster has its own state file.
+
+bucket = "terraform-state-0222206"
+prefix = "gke-autopilot/excellent-grin-302222/your-cluster-name"

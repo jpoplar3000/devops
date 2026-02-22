@@ -1,6 +1,11 @@
 terraform {
   required_version = ">= 1.5.0"
 
+  backend "gcs" {
+    # bucket and prefix supplied via -backend-config or backend config file
+    # e.g. terraform init -backend-config="bucket=MY_BUCKET" -backend-config="prefix=path/to/state"
+  }
+
   required_providers {
     google = {
       source  = "hashicorp/google"

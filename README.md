@@ -15,14 +15,20 @@ Terraform in `terraform/` provisions a [GKE Autopilot](https://cloud.google.com/
 
 ### Quick start
 
-```bash
-cd terraform
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your project_id, region, cluster_name
-terraform init
-terraform plan
-terraform apply
-```
+1. **State backend:** Create a GCS bucket for state and lock files (see [docs/TERRAFORM_BACKEND.md](docs/TERRAFORM_BACKEND.md)). Then copy and edit the backend config:
+   ```bash
+   cd terraform
+   cp backend.config.example backend.config
+   # Edit backend.config with your bucket and prefix (e.g. gke-autopilot/PROJECT_ID/CLUSTER_NAME)
+   ```
+2. **Variables:** Copy and edit tfvars, then run Terraform:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your project_id, region, cluster_name
+   terraform init -backend-config=backend.config
+   terraform plan
+   terraform apply
+   ```
 
 ### Connect to the cluster
 
