@@ -58,6 +58,11 @@ The workflow **Deploy GKE Autopilot** (`.github/workflows/gke-autopilot.yaml`) r
 
 ### Setup
 
+**Option A: Workload Identity Federation (recommended)**  
+No long-lived keys. See [docs/WIF_SETUP.md](docs/WIF_SETUP.md) for step-by-step instructions. Add repo variables `WIF_PROVIDER` and `WIF_SA` when done.
+
+**Option B: Service account key**
+
 1. **GCP service account**  
    Create a service account in the project(s) you will deploy to (or an org-level project) with:
    - **Kubernetes Engine Admin**
@@ -82,3 +87,14 @@ The workflow **Deploy GKE Autopilot** (`.github/workflows/gke-autopilot.yaml`) r
 Each run uses the inputs you provide, so you can target different projects, regions, and cluster names without changing code.
 
 **Multiple clusters:** If you use the same repo to manage more than one cluster (different projects/names/regions), configure a [remote backend](https://www.terraform.io/language/settings/backends) (e.g. GCS) and use a state key that includes `project_id` and `cluster_name` (or similar) so each cluster has its own state file. Otherwise each run will overwrite the same local state.
+
+### Destroying a cluster
+
+Use the **Destroy GKE Autopilot** workflow (`.github/workflows/gke-autopilot-destroy.yaml`):
+
+1. **Actions** → **Destroy GKE Autopilot** → **Run workflow**
+2. Enter the same **project_id**, **region**, and **cluster_name** (and optional settings) used when the cluster was created.
+3. Check **confirm_destroy** to allow the run.
+4. Run the workflow.
+
+Destroy only works if Terraform state for that cluster is available (e.g. use a remote backend and the same backend config for deploy and destroy). If the cluster was created with **deletion protection** enabled, run a deploy with `deletion_protection = false` first, then run destroy.
