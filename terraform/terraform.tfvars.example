@@ -1,0 +1,21 @@
+# Copy to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored.
+
+project_id   = "my-gcp-project-id"
+region       = "us-central1"
+cluster_name = "my-autopilot-cluster"
+
+# GKE release channel: REGULAR (default), RAPID, or STABLE
+release_channel = "REGULAR"
+
+# Use default VPC or set custom network/subnet
+# network    = "default"
+# subnetwork = ""
+
+# Set to true for production to avoid accidental deletion
+deletion_protection = false
+
+# Optional: private cluster (uncomment and set to true)
+# enable_private_cluster = false
+# private_endpoint       = false
+# master_ipv4_cidr_block = "172.16.0.0/28"
