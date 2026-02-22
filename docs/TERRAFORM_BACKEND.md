@@ -68,7 +68,17 @@ terraform init \
 
 Workflows use prefix `gke-autopilot/{project_id}/{cluster_name}` so each cluster has its own state file and deploy/destroy use the same state for that cluster.
 
-## 4. Locking
+## 4. "Gaia id not found" / 404 when using the backend
+
+If Terraform init fails with something like `Gaia id not found for email ...@989320585748.iam.gserviceaccount.com`:
+
+- GCP expects the **project ID** in the service account email (e.g. `excellent-grin-302222`), not the **project number** (e.g. `989320585748`).
+- **If using a key (GOOGLE_CREDENTIALS):** Open the JSON key and check `client_email`. It must be `your-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com` (e.g. `github-actions-sa@excellent-grin-302222.iam.gserviceaccount.com`). If it shows the project number, create a new key for the same service account in the GCP console and update the secret.
+- **If using WIF:** Ensure the repo variable `WIF_SA` uses the project ID: `github-actions-sa@excellent-grin-302222.iam.gserviceaccount.com`, not the project number.
+
+The workflows set `GOOGLE_CLOUD_PROJECT` and `CLOUDSDK_CORE_PROJECT` to the workflow input `project_id` so the correct project is used for backend and provider calls.
+
+## 5. Locking
 
 The GCS backend uses the bucket for state locking. No extra setup is required. While a run holds the lock, other runs that use the same bucket and prefix will wait or fail. Enable **versioning** on the bucket so you can recover from bad updates and for reliable locking behavior.
 

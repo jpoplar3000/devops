@@ -92,6 +92,10 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
+        env:
+          # Use project ID (not number) so GCS backend and providers use correct project
+          GOOGLE_CLOUD_PROJECT: ${{ inputs.project_id }}
+          CLOUDSDK_CORE_PROJECT: ${{ inputs.project_id }}
         run: |
           terraform init -input=false \
             -backend-config="bucket=${{ vars.TF_STATE_BUCKET || 'terraform-state-0222206' }}" \
@@ -99,6 +103,9 @@ jobs:
 
       - name: Terraform Plan
         id: plan
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ inputs.project_id }}
+          CLOUDSDK_CORE_PROJECT: ${{ inputs.project_id }}
         run: |
           terraform plan -no-color -input=false \
             -var="project_id=${{ inputs.project_id }}" \
@@ -117,8 +124,13 @@ jobs:
 
       - name: Terraform Apply
         if: inputs.apply == true && success()
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ inputs.project_id }}
+          CLOUDSDK_CORE_PROJECT: ${{ inputs.project_id }}
         run: terraform apply -no-color -input=false -auto-approve tfplan
 
       - name: Outputs
         if: inputs.apply == true && success()
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ inputs.project_id }}
         run: terraform output -json
