@@ -104,3 +104,15 @@ Use the **Destroy GKE Autopilot** workflow (`.github/workflows/gke-autopilot-des
 4. Run the workflow.
 
 Destroy only works if Terraform state for that cluster is available (e.g. use a remote backend and the same backend config for deploy and destroy). If the cluster was created with **deletion protection** enabled, run a deploy with `deletion_protection = false` first, then run destroy.
+
+---
+
+## GitOps (ArgoCD + Helm)
+
+After the cluster is created, use [ArgoCD](https://argo-cd.readthedocs.io/) to deploy and manage Helm charts from Git.
+
+- **Plan:** [docs/GITOPS_PLAN.md](docs/GITOPS_PLAN.md)
+- **Chart definitions:** `gitops/apps/` – one Application per chart (version + custom values)
+- **Bootstrap:** `./scripts/install-argocd.sh` (installs ArgoCD and app-of-apps)
+
+Add charts by creating a new YAML in `gitops/apps/` with `repoURL`, `chart`, `targetRevision`, and `helm.values`. See `gitops/apps/_example.yaml`.

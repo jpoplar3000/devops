@@ -1,0 +1,32 @@
+# Example ArgoCD Application for a Helm chart.
+# Copy to apps/<chart-name>.yaml and customize.
+# Update repoURL, chart, and targetRevision before use.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: example-chart
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: nginx
+    targetRevision: "15.0.0"   # Chart version
+    helm:
+      # Option A: inline values
+      values: |
+        replicaCount: 2
+        service:
+          type: ClusterIP
+      # Option B: valuesObject (alternative to values string)
+      # valuesObject:
+      #   replicaCount: 2
+      #   service:
+      #     type: ClusterIP
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: example
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

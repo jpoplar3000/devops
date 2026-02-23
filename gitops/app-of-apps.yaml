@@ -1,0 +1,24 @@
+# Bootstrap: apply this once after ArgoCD is installed.
+# This Application points to gitops/apps/ and creates an Application for each manifest there.
+#
+# kubectl apply -f gitops/app-of-apps.yaml
+#
+# Update repoURL and targetRevision for your repo/branch.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jpoplar3000/devops
+    path: gitops/apps
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

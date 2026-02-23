@@ -1,0 +1,13 @@
+# ArgoCD Helm values overrides
+# Install: helm install argocd argo-cd --repo https://argoproj.github.io/argo-helm -n argocd --create-namespace -f gitops/argocd/values.yaml
+
+server:
+  # Expose server via LoadBalancer to access UI (or use port-forward)
+  service:
+    type: LoadBalancer
+
+  # Disable auth for dev; enable for production
+  # config:
+  #   configs:
+  #     argocd-cm:
+  #       admin.enabled: "true"
